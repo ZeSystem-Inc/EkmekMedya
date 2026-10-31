@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EkmekMedya - Kayıt Ol</title>
+    <link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+
+    <div class="container">
+        <header class="profile-card">
+            <h1>🍞 EkmekMedya</h1>
+            <p class="bio">Fırına katıl, ilk ekmeğini sen pişir!</p>
+        </header>
+
+        <section class="new-post-box">
+            <h2>Yeni Hesap Oluştur</h2>
+            <input type="email" id="regEmailInput" placeholder="E-posta adresiniz">
+            <input type="password" id="regPasswordInput" placeholder="Şifreniz (En az 6 karakter)">
+            
+            <button id="registerBtn" style="width: 100%; margin-top: 10px;">Kayıt Ol</button>
+            <p id="authMessage" class="error-msg"></p>
+            
+            <p style="margin-top: 15px; font-size: 13px; text-align: center; color: #94a3b8;">
+                Zaten hesabın var mı? <a href="giris.html" style="color: #f59e0b;">Giriş Yap</a>
+            </p>
+            <p style="margin-top: 10px; font-size: 13px; text-align: center;">
+                <a href="../index.html" style="color: #94a3b8; text-decoration: none;">← Ana Sayfaya Dön</a>
+            </p>
+        </section>
+    </div>
+
+    <script type="module" src="../script/kayit.js"></script>
+</body>
+</html>
