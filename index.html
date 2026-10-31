@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EkmekMedya - Taze Gönderiler</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <header class="profile-card">
+            <h1>🍞 EkmekMedya</h1>
+            <p class="bio">En taze fikirler, en sıcak akış!</p>
+        </header>
+
+        <section class="new-post-box">
+            <input type="text" id="authorInput" placeholder="Kullanıcı Adınız" maxlength="25">
+            <textarea id="contentInput" placeholder="Neler oluyor? Bir fırın dolusu fikir paylaş..." maxlength="280"></textarea>
+            
+            <div class="form-footer">
+                <span id="charCount">280</span>
+                <button id="shareBtn">🍞 Fırına Ver (Paylaş)</button>
+            </div>
+        </section>
+
+        <main class="feed" id="postsContainer">
+        </main>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
