@@ -5,16 +5,9 @@ const SUPABASE_ANON_KEY = 'sb_publishable_U-8A6lfjcmF3x6UOU_NK_A_WV0YWMFY'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-const authSection = document.getElementById('authSection');
 const postSection = document.getElementById('postSection');
-const emailInput = document.getElementById('emailInput');
-const passwordInput = document.getElementById('passwordInput');
-const loginBtn = document.getElementById('loginBtn');
-const registerBtn = document.getElementById('registerBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const authMessage = document.getElementById('authMessage');
-const currentUserText = document.getElementById('currentUserText');
-
+const loginPromptSection = document.getElementById('loginPromptSection');
+const userHeaderBar = document.getElementById('userHeaderBar');
 const postsContainer = document.getElementById('postsContainer');
 const contentInput = document.getElementById('contentInput');
 const shareBtn = document.getElementById('shareBtn');
@@ -26,63 +19,32 @@ async function oturumKontrol() {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
         activeUser = session.user;
-        authSection.style.display = 'none';
         postSection.style.display = 'block';
-        currentUserText.textContent = `Giriş yapılan: ${activeUser.email}`;
+        loginPromptSection.style.display = 'none';
+        userHeaderBar.innerHTML = `
+            <span style="font-size: 13px; color: #38bdf8;">👤 ${activeUser.email}</span>
+            <button id="logoutBtn" style="background: #ef4444; color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-left: 10px;">Çıkış Yap</button>
+        `;
+        
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.reload();
+        });
     } else {
         activeUser = null;
-        authSection.style.display = 'block';
         postSection.style.display = 'none';
+        loginPromptSection.style.display = 'block';
+        userHeaderBar.innerHTML = '';
     }
     gonderileriGetir();
 }
 
-registerBtn.addEventListener('click', async () => {
-    const email = emailInput.value.trim();
-    const password = passwordInput.value.trim();
-
-    if (!email || !password) {
-        authMessage.style.color = "#f87171";
-        authMessage.textContent = "Lütfen e-posta ve şifrenizi boş bırakmayın!";
-        return;
-    }
-
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-        authMessage.style.color = "#f87171";
-        authMessage.textContent = "Kayıt hatası: " + error.message;
-    } else {
-        authMessage.style.color = "#34d399";
-        authMessage.textContent = "Kayıt başarılı! Şimdi giriş yapabilirsiniz.";
-    }
-});
-
-loginBtn.addEventListener('click', async () => {
-    const email = emailInput.value.trim();
-    const password = passwordInput.value.trim();
-
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-        authMessage.style.color = "#f87171";
-        authMessage.textContent = "Giriş hatası: " + error.message;
-    } else {
-        authMessage.textContent = "";
-        emailInput.value = "";
-        passwordInput.value = "";
-        oturumKontrol();
-    }
-});
-
-// Çıkış Yap
-logoutBtn.addEventListener('click', async () => {
-    await supabase.auth.signOut();
-    oturumKontrol();
-});
-
-contentInput.addEventListener('input', () => {
-    const remaining = 280 - contentInput.value.length;
-    charCount.textContent = remaining;
-});
+if (contentInput) {
+    contentInput.addEventListener('input', () => {
+        const remaining = 280 - contentInput.value.length;
+        charCount.textContent = remaining;
+    });
+}
 
 async function gonderileriGetir() {
     let { data: posts, error } = await supabase
@@ -91,7 +53,6 @@ async function gonderileriGetir() {
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error("Veri çekme hatası:", error);
         postsContainer.innerHTML = "<p>Gönderiler yüklenirken hata oluştu.</p>";
         return;
     }
@@ -154,7 +115,6 @@ async function gonderiPaylas() {
         .insert([{ author: activeUser.email, content: content, likes: 0 }]);
 
     if (error) {
-        console.error("Kayıt hatası:", error);
         alert("Paylaşım başarısız oldu.");
     } else {
         contentInput.value = "";
@@ -183,6 +143,8 @@ function escapeHtml(str) {
     );
 }
 
-shareBtn.addEventListener('click', gonderiPaylas);
+if (shareBtn) {
+    shareBtn.addEventListener('click', gonderiPaylas);
+}
 
 oturumKontrol();
