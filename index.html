@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EkmekMedya - Taze Gönderiler</title>
+    <title>EkmekMedya - Giriş Yap</title>
     <link rel="stylesheet" href="style/style.css">
 </head>
 <body>
@@ -14,10 +14,23 @@
             <p class="bio">En taze fikirler, en sıcak akış!</p>
         </header>
 
-        <section class="new-post-box">
-            <input type="text" id="authorInput" placeholder="Kullanıcı Adınız" maxlength="25">
+        <section id="authSection" class="new-post-box">
+            <h2>Hesap İşlemleri</h2>
+            <input type="email" id="emailInput" placeholder="E-posta adresiniz">
+            <input type="password" id="passwordInput" placeholder="Şifreniz">
+            <div class="auth-buttons">
+                <button id="loginBtn">Giriş Yap</button>
+                <button id="registerBtn" class="secondary-btn">Kayıt Ol</button>
+            </div>
+            <p id="authMessage" class="error-msg"></p>
+        </section>
+
+        <section id="postSection" class="new-post-box" style="display: none;">
+            <div class="user-info-bar">
+                <span id="currentUserText">Hoş geldin!</span>
+                <button id="logoutBtn" class="logout-btn">Çıkış Yap</button>
+            </div>
             <textarea id="contentInput" placeholder="Neler oluyor? Bir fırın dolusu fikir paylaş..." maxlength="280"></textarea>
-            
             <div class="form-footer">
                 <span id="charCount">280</span>
                 <button id="shareBtn">🍞 Fırına Ver (Paylaş)</button>
