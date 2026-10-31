@@ -55,6 +55,60 @@ body {
     height: 90px;
 }
 
+.auth-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.auth-buttons button {
+    flex: 1;
+}
+
+.secondary-btn {
+    background: #334155;
+    color: #f8fafc;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.secondary-btn:hover {
+    background: #475569;
+}
+
+.user-info-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #38bdf8;
+}
+
+.logout-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.logout-btn:hover {
+    background: #dc2626;
+}
+
+.error-msg {
+    color: #f87171;
+    font-size: 13px;
+    margin-top: 8px;
+}
+
 .form-footer {
     display: flex;
     justify-content: space-between;
