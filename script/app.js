@@ -37,17 +37,23 @@ async function oturumKontrol() {
     gonderileriGetir();
 }
 
-// Kayıt Ol
 registerBtn.addEventListener('click', async () => {
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
 
+    if (!email || !password) {
+        authMessage.style.color = "#f87171";
+        authMessage.textContent = "Lütfen e-posta ve şifrenizi boş bırakmayın!";
+        return;
+    }
+
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) {
+        authMessage.style.color = "#f87171";
         authMessage.textContent = "Kayıt hatası: " + error.message;
     } else {
         authMessage.style.color = "#34d399";
-        authMessage.textContent = "Kayıt başarılı! Lütfen giriş yapın.";
+        authMessage.textContent = "Kayıt başarılı! Şimdi giriş yapabilirsiniz.";
     }
 });
 
