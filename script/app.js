@@ -5,9 +5,8 @@ const SUPABASE_ANON_KEY = 'sb_publishable_U-8A6lfjcmF3x6UOU_NK_A_WV0YWMFY'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+const authNavButtons = document.getElementById('authNavButtons');
 const postSection = document.getElementById('postSection');
-const loginPromptSection = document.getElementById('loginPromptSection');
-const userHeaderBar = document.getElementById('userHeaderBar');
 const postsContainer = document.getElementById('postsContainer');
 const contentInput = document.getElementById('contentInput');
 const shareBtn = document.getElementById('shareBtn');
@@ -17,13 +16,14 @@ let activeUser = null;
 
 async function oturumKontrol() {
     const { data: { session } } = await supabase.auth.getSession();
+    
     if (session) {
         activeUser = session.user;
         postSection.style.display = 'block';
-        loginPromptSection.style.display = 'none';
-        userHeaderBar.innerHTML = `
-            <span style="font-size: 13px; color: #38bdf8;">👤 ${activeUser.email}</span>
-            <button id="logoutBtn" style="background: #ef4444; color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-left: 10px;">Çıkış Yap</button>
+        
+        authNavButtons.innerHTML = `
+            <span class="user-badge">👤 ${activeUser.email.split('@')[0]}</span>
+            <button id="logoutBtn" class="logout-btn">Çıkış Yap</button>
         `;
         
         document.getElementById('logoutBtn').addEventListener('click', async () => {
@@ -33,8 +33,11 @@ async function oturumKontrol() {
     } else {
         activeUser = null;
         postSection.style.display = 'none';
-        loginPromptSection.style.display = 'block';
-        userHeaderBar.innerHTML = '';
+        
+        authNavButtons.innerHTML = `
+            <a href="HTML/giris.html" class="btn-login">Giriş Yap</a>
+            <a href="HTML/kayit.html" class="btn-register">Kayıt Ol</a>
+        `;
     }
     gonderileriGetir();
 }
@@ -53,14 +56,14 @@ async function gonderileriGetir() {
         .order('created_at', { ascending: false });
 
     if (error) {
-        postsContainer.innerHTML = "<p>Gönderiler yüklenirken hata oluştu.</p>";
+        postsContainer.innerHTML = "<p style='color:#f87171;'>Gönderiler yüklenirken hata oluştu.</p>";
         return;
     }
 
     postsContainer.innerHTML = "";
 
     if (posts.length === 0) {
-        postsContainer.innerHTML = "<p>Henüz hiç gönderi yok. İlk ekmeği sen fırına ver!</p>";
+        postsContainer.innerHTML = "<p style='color:#94a3b8; text-align:center;'>Toplulukta henüz hiç gönderi yok. İlk ekmeği sen fırına ver!</p>";
         return;
     }
 
@@ -123,7 +126,7 @@ async function gonderiPaylas() {
     }
 
     shareBtn.disabled = false;
-    shareBtn.textContent = "🍞 Fırına Ver (Paylaş)";
+    shareBtn.textContent = "🍞 Paylaş";
 }
 
 async function gonderiBegen(id, currentLikes) {
