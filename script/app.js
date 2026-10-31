@@ -5,11 +5,73 @@ const SUPABASE_ANON_KEY = 'sb_publishable_U-8A6lfjcmF3x6UOU_NK_A_WV0YWMFY'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+const authSection = document.getElementById('authSection');
+const postSection = document.getElementById('postSection');
+const emailInput = document.getElementById('emailInput');
+const passwordInput = document.getElementById('passwordInput');
+const loginBtn = document.getElementById('loginBtn');
+const registerBtn = document.getElementById('registerBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const authMessage = document.getElementById('authMessage');
+const currentUserText = document.getElementById('currentUserText');
+
 const postsContainer = document.getElementById('postsContainer');
-const authorInput = document.getElementById('authorInput');
 const contentInput = document.getElementById('contentInput');
 const shareBtn = document.getElementById('shareBtn');
 const charCount = document.getElementById('charCount');
+
+let activeUser = null;
+
+async function oturumKontrol() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+        activeUser = session.user;
+        authSection.style.display = 'none';
+        postSection.style.display = 'block';
+        currentUserText.textContent = `Giriş yapılan: ${activeUser.email}`;
+    } else {
+        activeUser = null;
+        authSection.style.display = 'block';
+        postSection.style.display = 'none';
+    }
+    gonderileriGetir();
+}
+
+// Kayıt Ol
+registerBtn.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+        authMessage.textContent = "Kayıt hatası: " + error.message;
+    } else {
+        authMessage.style.color = "#34d399";
+        authMessage.textContent = "Kayıt başarılı! Lütfen giriş yapın.";
+    }
+});
+
+loginBtn.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+        authMessage.style.color = "#f87171";
+        authMessage.textContent = "Giriş hatası: " + error.message;
+    } else {
+        authMessage.textContent = "";
+        emailInput.value = "";
+        passwordInput.value = "";
+        oturumKontrol();
+    }
+});
+
+// Çıkış Yap
+logoutBtn.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    oturumKontrol();
+});
 
 contentInput.addEventListener('input', () => {
     const remaining = 280 - contentInput.value.length;
@@ -43,9 +105,11 @@ async function gonderileriGetir() {
             hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short'
         });
 
+        const yazarAdi = post.author ? post.author.split('@')[0] : 'Anonim';
+
         postElement.innerHTML = `
             <div class="post-header">
-                <span class="username">@${escapeHtml(post.author)}</span>
+                <span class="username">@${escapeHtml(yazarAdi)}</span>
                 <span class="time">${tarih}</span>
             </div>
             <p class="post-content">${escapeHtml(post.content)}</p>
@@ -58,7 +122,6 @@ async function gonderileriGetir() {
         postsContainer.appendChild(postElement);
     });
 
-    // Beğeni Butonu Dinleyicileri
     document.querySelectorAll('.like-btn').forEach(button => {
         button.addEventListener('click', () => {
             const id = button.getAttribute('data-id');
@@ -69,7 +132,7 @@ async function gonderileriGetir() {
 }
 
 async function gonderiPaylas() {
-    const author = authorInput.value.trim() || 'AnonimEkmek';
+    if (!activeUser) return;
     const content = contentInput.value.trim();
 
     if (!content) {
@@ -82,7 +145,7 @@ async function gonderiPaylas() {
 
     const { error } = await supabase
         .from('posts')
-        .insert([{ author: author, content: content, likes: 0 }]);
+        .insert([{ author: activeUser.email, content: content, likes: 0 }]);
 
     if (error) {
         console.error("Kayıt hatası:", error);
@@ -115,4 +178,5 @@ function escapeHtml(str) {
 }
 
 shareBtn.addEventListener('click', gonderiPaylas);
-gonderileriGetir();
+
+oturumKontrol();
