@@ -10,35 +10,60 @@
 
     <header class="navbar">
         <div class="nav-brand">
-            <h1>🍞 EkmekMedya</h1>
+            <h1 onclick="window.location.reload()">🍞 EkmekMedya</h1>
         </div>
         <div id="authNavButtons" class="nav-auth">
-            <!-- JS ile dinamik doldurulacak (Giriş Yap / Kayıt Ol veya Profil / Çıkış) -->
         </div>
     </header>
 
-    <div class="container">
-        <section class="welcome-card">
-            <h2>Fırına Hoş Geldin!</h2>
-            <p>En taze fikirlerin, sıcak paylaşımların ve keyifli sohbetlerin buluştuğu topluluk alanı.</p>
-        </section>
-
-        <section id="postSection" class="post-box" style="display: none;">
-            <h3>Fırına Yeni Bir Ekmek Bırak</h3>
-            <textarea id="contentInput" placeholder="Neler oluyor? Toplulukla bir fikir paylaş..." maxlength="280"></textarea>
-            <div class="form-footer">
-                <span id="charCount">280</span>
-                <button id="shareBtn">🍞 Paylaş</button>
+    <div class="layout">
+        <aside>
+            <div class="panel">
+                <h3>🔥 Fırınlar (Topluluklar)</h3>
+                <ul id="firinList" class="firin-list">
+                    <li>Yükleniyor...</li>
+                </ul>
             </div>
-        </section>
 
-        <div class="community-header">
-            <h2>🌍 Topluluk Akışı</h2>
-            <span class="community-subtitle">Herkese açık son paylaşımlar</span>
-        </div>
+            <!-- Fırın Başlatma Kutusu (Giriş Yapınca Görünür) -->
+            <div id="createFirinBox" class="panel" style="display: none;">
+                <h3>➕ Fırın Başlat</h3>
+                <input type="text" id="firinNameInput" class="input-field" placeholder="Fırın Adı (Örn: Oyun)">
+                <input type="text" id="firinSlugInput" class="input-field" placeholder="Slug (Örn: oyun)">
+                <button id="createFirinBtn" class="btn-primary">Fırın Aç</button>
+            </div>
+        </aside>
 
-        <main class="feed" id="postsContainer">
+        <!-- ORTA AKIŞ: Gönderiler ve Yorumlar -->
+        <main>
+            <!-- Gönderi Oluşturma Kutusu (Giriş Yapınca Görünür) -->
+            <div id="postCreateBox" class="panel" style="display: none;">
+                <h3>🍞 Fırına Paylaşım Yap</h3>
+                <select id="firinSelect" class="input-field"></select>
+                <input type="text" id="postTitleInput" class="input-field" placeholder="Başlık">
+                <textarea id="postContentInput" class="input-field" rows="3" placeholder="Fikrini paylaş..."></textarea>
+                <button id="submitPostBtn" class="btn-primary">Paylaş</button>
+            </div>
+
+            <div class="community-header">
+                <h2 id="currentFeedTitle">🌍 Ana Akış</h2>
+            </div>
+
+            <div id="postsFeed">Gönderiler yükleniyor...</div>
         </main>
+
+        <!-- SAĞ MENÜ: Profil & Başarımlar -->
+        <aside>
+            <div id="profilePanel" class="panel">
+                <h3>👤 Profiliniz</h3>
+                <p id="userStats" style="font-size: 13px; color: #94a3b8;">Giriş yapılmadı.</p>
+            </div>
+
+            <div class="panel">
+                <h3>🏆 Başarımlarınız</h3>
+                <div id="achievementsList" style="font-size: 13px; color: #94a3b8;">Giriş yapıldığında görünür.</div>
+            </div>
+        </aside>
     </div>
 
     <script type="module" src="script/app.js"></script>
