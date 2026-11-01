@@ -2,37 +2,42 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const SUPABASE_URL = 'https://glzeezpoacotlbhfercu.supabase.co'
 const SUPABASE_ANON_KEY = 'sb_publishable_U-8A6lfjcmF3x6UOU_NK_A_WV0YWMFY'
-
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+const regUsernameInput = document.getElementById('regUsernameInput');
 const regEmailInput = document.getElementById('regEmailInput');
 const regPasswordInput = document.getElementById('regPasswordInput');
 const registerBtn = document.getElementById('registerBtn');
 const authMessage = document.getElementById('authMessage');
 
 registerBtn.addEventListener('click', async () => {
+    const username = regUsernameInput.value.trim();
     const email = regEmailInput.value.trim();
     const password = regPasswordInput.value.trim();
 
-    if (!email || !password) {
-        authMessage.style.color = "#f87171";
+    if (!username || !email || !password) {
         authMessage.textContent = "Lütfen tüm alanları doldurun!";
         return;
     }
 
-    if (password.length < 6) {
-        authMessage.style.color = "#f87171";
-        authMessage.textContent = "Şifre en az 6 karakter olmalıdır!";
+    if (username.length < 3) {
+        authMessage.textContent = "Kullanıcı adı en az 3 karakter olmalıdır!";
         return;
     }
 
     registerBtn.disabled = true;
-    registerBtn.textContent = "Kaydediliyor...";
+    registerBtn.textContent = "Kayıt olunuyor...";
 
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    // Kullanıcı adını Supabase metadata içine gönderiyoruz
+    const { data, error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+            data: { username: username }
+        }
+    });
     
     if (error) {
-        authMessage.style.color = "#f87171";
         authMessage.textContent = "Kayıt hatası: " + error.message;
         registerBtn.disabled = false;
         registerBtn.textContent = "Kayıt Ol";
@@ -41,6 +46,6 @@ registerBtn.addEventListener('click', async () => {
         authMessage.textContent = "Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...";
         setTimeout(() => {
             window.location.href = "giris.html";
-        }, 1500);
+        }, 1200);
     }
 });
