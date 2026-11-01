@@ -24,8 +24,10 @@ async function checkAuth() {
         const { data: profile } = await supabase.from('profiles').select('*').eq('id', activeUser.id).single();
         userProfile = profile;
 
-        document.getElementById('postCreateBox').style.display = 'block';
-        document.getElementById('createFirinBox').style.display = 'block';
+        const postCreateBox = document.getElementById('postCreateBox');
+        const createFirinBox = document.getElementById('createFirinBox');
+        if (postCreateBox) postCreateBox.style.display = 'block';
+        if (createFirinBox) createFirinBox.style.display = 'block';
 
         authNavButtons.innerHTML = `
             <span style="font-size: 13px; color: #38bdf8;">@${profile?.username || 'Fırıncı'} (${profile?.taze_puani || 0} 🍞)</span>
@@ -52,74 +54,84 @@ async function loadFirins() {
     const firinList = document.getElementById('firinList');
     const firinSelect = document.getElementById('firinSelect');
 
-    firinList.innerHTML = `<li><a href="#" id="allFirins">🌍 Tüm Akış</a></li>`;
-    if (firinSelect) firinSelect.innerHTML = '';
-
-    document.getElementById('allFirins').addEventListener('click', (e) => {
-        e.preventDefault();
-        selectedFirinId = null;
-        document.getElementById('currentFeedTitle').textContent = "🌍 Ana Akış";
-        loadPosts();
-    });
-
-    firinlar?.forEach(firin => {
-        const li = document.createElement('li');
-        li.innerHTML = `<a href="#">fırın/${firin.slug}</a>`;
-        li.querySelector('a').addEventListener('click', (e) => {
+    if (firinList) {
+        firinList.innerHTML = `<li><a href="#" id="allFirins">🌍 Tüm Akış</a></li>`;
+        document.getElementById('allFirins').addEventListener('click', (e) => {
             e.preventDefault();
-            selectedFirinId = firin.id;
-            document.getElementById('currentFeedTitle').textContent = `fırın/${firin.slug}`;
+            selectedFirinId = null;
+            document.getElementById('currentFeedTitle').textContent = "🌍 Ana Akış";
             loadPosts();
         });
-        firinList.appendChild(li);
 
-        if (firinSelect) {
+        firinlar?.forEach(firin => {
+            const li = document.createElement('li');
+            li.innerHTML = `<a href="#">fırın/${firin.slug}</a>`;
+            li.querySelector('a').addEventListener('click', (e) => {
+                e.preventDefault();
+                selectedFirinId = firin.id;
+                document.getElementById('currentFeedTitle').textContent = `fırın/${firin.slug}`;
+                loadPosts();
+            });
+            firinList.appendChild(li);
+        });
+    }
+
+    if (firinSelect) {
+        firinSelect.innerHTML = '';
+        firinlar?.forEach(firin => {
             firinSelect.innerHTML += `<option value="${firin.id}">fırın/${firin.slug} - ${firin.name}</option>`;
+        });
+    }
+}
+
+const createFirinBtn = document.getElementById('createFirinBtn');
+if (createFirinBtn) {
+    createFirinBtn.addEventListener('click', async () => {
+        const name = document.getElementById('firinNameInput').value.trim();
+        const slug = document.getElementById('firinSlugInput').value.trim().toLowerCase();
+
+        if (!name || !slug) return alert("Alanları doldurun!");
+
+        const { error } = await supabase.from('firinlar').insert([{ name, slug, creator_id: activeUser.id }]);
+        if (error) alert("Hata: " + error.message);
+        else {
+            alert("Fırın başarıyla açıldı!");
+            window.location.reload();
         }
     });
 }
 
-document.getElementById('createFirinBtn')?.addEventListener('click', async () => {
-    const name = document.getElementById('firinNameInput').value.trim();
-    const slug = document.getElementById('firinSlugInput').value.trim().toLowerCase();
+const submitPostBtn = document.getElementById('submitPostBtn');
+if (submitPostBtn) {
+    submitPostBtn.addEventListener('click', async () => {
+        const now = Date.now();
+        if (now - lastPostTime < 30000) {
+            return alert("Taze spam koruması! Yeni gönderi için 30 saniye beklemelisin.");
+        }
 
-    if (!name || !slug) return alert("Alanları doldurun!");
+        const firin_id = document.getElementById('firinSelect').value;
+        const title = document.getElementById('postTitleInput').value.trim();
+        const content = document.getElementById('postContentInput').value.trim();
 
-    const { error } = await supabase.from('firinlar').insert([{ name, slug, creator_id: activeUser.id }]);
-    if (error) alert("Hata: " + error.message);
-    else {
-        alert("Fırın başarıyla açıldı!");
-        window.location.reload();
-    }
-});
+        if (!title || !content) return alert("Başlık ve içerik gereklidir.");
 
-document.getElementById('submitPostBtn')?.addEventListener('click', async () => {
-    const now = Date.now();
-    if (now - lastPostTime < 30000) {
-        return alert("Taze spam koruması! Yeni gönderi için 30 saniye beklemelisin.");
-    }
+        const { error } = await supabase.from('posts').insert([{
+            firin_id, author_id: activeUser.id, title, content
+        }]);
 
-    const firin_id = document.getElementById('firinSelect').value;
-    const title = document.getElementById('postTitleInput').value.trim();
-    const content = document.getElementById('postContentInput').value.trim();
-
-    if (!title || !content) return alert("Başlık ve içerik gereklidir.");
-
-    const { error } = await supabase.from('posts').insert([{
-        firin_id, author_id: activeUser.id, title, content
-    }]);
-
-    if (!error) {
-        lastPostTime = now;
-        document.getElementById('postTitleInput').value = '';
-        document.getElementById('postContentInput').value = '';
-        
-        await supabase.from('profiles').update({ taze_puani: (userProfile.taze_puani || 0) + 10 }).eq('id', activeUser.id);
-        loadPosts();
-    } else {
-        alert("Paylaşım hatası: " + error.message);
-    }
-});
+        if (!error) {
+            lastPostTime = now;
+            document.getElementById('postTitleInput').value = '';
+            document.getElementById('postContentInput').value = '';
+            
+            // Başarılı paylaşıma Taze Puanı ödülü (+10)
+            await supabase.from('profiles').update({ taze_puani: (userProfile.taze_puani || 0) + 10 }).eq('id', activeUser.id);
+            loadPosts();
+        } else {
+            alert("Paylaşım hatası: " + error.message);
+        }
+    });
+}
 
 async function loadPosts() {
     let query = supabase.from('posts').select('*, profiles(username), firinlar(slug, creator_id)').order('created_at', { ascending: false });
@@ -128,6 +140,7 @@ async function loadPosts() {
 
     const { data: posts } = await query;
     const feed = document.getElementById('postsFeed');
+    if (!feed) return;
     feed.innerHTML = '';
 
     if (!posts || posts.length === 0) {
@@ -139,6 +152,7 @@ async function loadPosts() {
         const netScore = (post.taze_count || 0) - (post.kuflu_count || 0);
         const isAdmin = userProfile?.is_admin;
         const isMod = post.firinlar?.creator_id === activeUser?.id;
+        const isAuthor = post.author_id === activeUser?.id;
 
         const postEl = document.createElement('div');
         postEl.className = 'post-card';
@@ -156,7 +170,7 @@ async function loadPosts() {
                 <div class="post-content">${escapeHtml(post.content)}</div>
                 <div class="post-actions">
                     <button class="action-link comment-toggle-btn">💬 Yorumlar</button>
-                    ${(isAdmin || isMod) ? `<button class="action-link admin-del delete-btn">🗑️ Sil</button>` : ''}
+                    ${(isAdmin || isMod || isAuthor) ? `<button class="action-link admin-del delete-btn">🗑️ Sil</button>` : ''}
                 </div>
                 <div class="comments-section" style="display:none;">
                     <div class="comments-list"></div>
@@ -173,7 +187,8 @@ async function loadPosts() {
         postEl.querySelector('.taze-btn').addEventListener('click', () => oyVer(post.id, 'taze'));
         postEl.querySelector('.kuflu-btn').addEventListener('click', () => oyVer(post.id, 'kuflu'));
 
-        if (isAdmin || isMod) {
+        // Silme Yetkisi (Yazar, Fırın Modu veya Sistem Admini)
+        if (isAdmin || isMod || isAuthor) {
             postEl.querySelector('.delete-btn').addEventListener('click', async () => {
                 if (confirm("Bu gönderiyi silmek istediğine emin misin?")) {
                     await supabase.from('posts').delete().eq('id', post.id);
@@ -238,16 +253,20 @@ async function loadComments(postId, container) {
 }
 
 async function loadProfileStats() {
-    document.getElementById('userStats').innerHTML = `
-        <strong>Kullanıcı:</strong> @${userProfile.username}<br>
-        <strong>Puan:</strong> ${userProfile.taze_puani} 🍞<br>
-        <strong>Rol:</strong> ${userProfile.is_admin ? '<span style="color:#ef4444">Admin</span>' : 'Üye'}
-    `;
+    const statsEl = document.getElementById('userStats');
+    if (statsEl && userProfile) {
+        statsEl.innerHTML = `
+            <strong>Kullanıcı:</strong> @${userProfile.username}<br>
+            <strong>Puan:</strong> ${userProfile.taze_puani} 🍞<br>
+            <strong>Rol:</strong> ${userProfile.is_admin ? '<span style="color:#ef4444">Admin</span>' : 'Üye'}
+        `;
+    }
 }
 
 async function loadAchievements() {
-    const { data: badges } = await supabase.from('achievements').select('*').eq('user_id', activeUser.id);
     const box = document.getElementById('achievementsList');
+    if (!box || !activeUser) return;
+    const { data: badges } = await supabase.from('achievements').select('*').eq('user_id', activeUser.id);
     box.innerHTML = '';
     badges?.forEach(b => {
         box.innerHTML += `<span class="badge-item">${b.badge_icon} ${b.title}</span>`;
